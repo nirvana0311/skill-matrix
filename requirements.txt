@@ -1,4 +1,0 @@
-flask
-sentence-transformers
-azure-storage-blob
-pandas
