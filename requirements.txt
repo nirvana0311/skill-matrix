@@ -1,2 +1,4 @@
 flask
-# sentence-transformers
+sentence-transformers
+azure-storage-blob
+pandas
