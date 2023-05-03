@@ -9,45 +9,65 @@ import time
 model = SentenceTransformer('distilbert-base-nli-mean-tokens')
 
 # Read CSV file from Azure Blob Storage
-connection_string = "DefaultEndpointsProtocol=https;AccountName=documentsourcestorage;AccountKey=ODdUIoI4mP/9mFVgnjZZKzY/9b9EYSGkFwk3QGXoIKlO+w4nYeHIF1rNJt0Z8PRKkeh6ZS4WUySloLv1IbFj3w==;EndpointSuffix=core.windows.net"
-blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-container_client = blob_service_client.get_container_client('cvs')
-blob_client = container_client.get_blob_client("skills_pivoted/pivoted_skill_matrix.csv")
-downloaded_blob = blob_client.download_blob()
-data = downloaded_blob.content_as_text()
-pivoted_skill_matrix = pd.read_csv(io.StringIO(data))
-skill_list = set(pivoted_skill_matrix.columns)
+# connection_string = "DefaultEndpointsProtocol=https;AccountName=documentsourcestorage;AccountKey=ODdUIoI4mP/9mFVgnjZZKzY/9b9EYSGkFwk3QGXoIKlO+w4nYeHIF1rNJt0Z8PRKkeh6ZS4WUySloLv1IbFj3w==;EndpointSuffix=core.windows.net"
+# blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+# container_client = blob_service_client.get_container_client('cvs')
+# blob_client = container_client.get_blob_client("skills_pivoted/pivoted_skill_matrix.csv")
+# downloaded_blob = blob_client.download_blob()
+# data = downloaded_blob.content_as_text()
+# pivoted_skill_matrix = pd.read_csv(io.StringIO(data))
+# skill_list = set(pivoted_skill_matrix.columns)
 
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return 'Please provide a phrase in the URL to shortlist skills with cosine similarity score above 0.75.'
+    return 'Please provide a phrase in the URL to shortlist skills with cosine similarity score above 0.85.'
 
 @app.route('/<phrase>')
+
+
 def shortlist_skills(phrase):
-    start_time = time.time()
-    # Get embeddings for phrase
-    phrase_embeddings = model.encode([phrase])
 
-    # Calculate cosine similarity between phrase and all skills in the skill_list
-    cos_sim_list = []
-    for skill in skill_list:
-        skill_embeddings = model.encode([skill])
-        cos_sim = util.cos_sim(phrase_embeddings, skill_embeddings)
-        if cos_sim > 0.85:
-            cos_sim_list.append((skill, cos_sim))
+    # Define two phrases to compare
+    phrase1 = 'water'
+    phrase2 = 'lion'
 
-    # Sort the cos_sim_list in descending order of cosine similarity and select top skills
-    top_skills = sorted(cos_sim_list, key=lambda x: x[1], reverse=True)
+    # Generate embeddings for phrases
+    embeddings = model.encode([phrase1, phrase2])
 
-    # Calculate the time required to serve the request
-    end_time = time.time()
-    time_taken = end_time - start_time
+    # Calculate cosine similarity between embeddings
+    cos_sim = util.cos_sim(embeddings[0], embeddings[1])
+    cos_sim = cos_sim.item()
 
-    # Return the top skills and time taken as a string
-    return 'Top skills with cosine similarity score above 0.75 to "{}": {}\nTime taken: {} seconds'.format(phrase, [skill[0] for skill in top_skills], round(time_taken))
+    # Print cosine similarity
+    print('Cosine similarity between phrase1 and phrase2:', cos_sim)
+
+    return 'Top skills with cosine similarity score above 0.75 to "{}": "{}"\nTime taken: seconds'.format(phrase1, str(cos_sim))
+
+# def shortlist_skills(phrase):
+#     start_time = time.time()
+#     # Get embeddings for phrase
+#     phrase_embeddings = model.encode([phrase])
+
+#     # Calculate cosine similarity between phrase and all skills in the skill_list
+#     cos_sim_list = []
+#     for skill in skill_list:
+#         skill_embeddings = model.encode([skill])
+#         cos_sim = util.cos_sim(phrase_embeddings, skill_embeddings)
+#         if cos_sim > 0.85:
+#             cos_sim_list.append((skill, cos_sim))
+
+#     # Sort the cos_sim_list in descending order of cosine similarity and select top skills
+#     top_skills = sorted(cos_sim_list, key=lambda x: x[1], reverse=True)
+
+#     # Calculate the time required to serve the request
+#     end_time = time.time()
+#     time_taken = end_time - start_time
+
+#     # Return the top skills and time taken as a string
+#     return 'Top skills with cosine similarity score above 0.85 to "{}": {}\nTime taken: {} seconds'.format(phrase, [skill[0] for skill in top_skills], round(time_taken))
 
 if __name__ == '__main__':
     app.run()
