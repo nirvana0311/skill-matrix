@@ -9,21 +9,21 @@ import time
 model = SentenceTransformer('distilbert-base-nli-mean-tokens')
 
 # Read CSV file from Azure Blob Storage
-# connection_string = "DefaultEndpointsProtocol=https;AccountName=documentsourcestorage;AccountKey=ODdUIoI4mP/9mFVgnjZZKzY/9b9EYSGkFwk3QGXoIKlO+w4nYeHIF1rNJt0Z8PRKkeh6ZS4WUySloLv1IbFj3w==;EndpointSuffix=core.windows.net"
-# blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-# container_client = blob_service_client.get_container_client('cvs')
-# blob_client = container_client.get_blob_client("skills_pivoted/pivoted_skill_matrix.csv")
-# downloaded_blob = blob_client.download_blob()
-# data = downloaded_blob.content_as_text()
-# pivoted_skill_matrix = pd.read_csv(io.StringIO(data))
-# skill_list = set(pivoted_skill_matrix.columns)
+connection_string = "DefaultEndpointsProtocol=https;AccountName=documentsourcestorage;AccountKey=ODdUIoI4mP/9mFVgnjZZKzY/9b9EYSGkFwk3QGXoIKlO+w4nYeHIF1rNJt0Z8PRKkeh6ZS4WUySloLv1IbFj3w==;EndpointSuffix=core.windows.net"
+blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+container_client = blob_service_client.get_container_client('cvs')
+blob_client = container_client.get_blob_client("skills_pivoted/pivoted_skill_matrix.csv")
+downloaded_blob = blob_client.download_blob()
+data = downloaded_blob.content_as_text()
+pivoted_skill_matrix = pd.read_csv(io.StringIO(data))
+skill_list = set(pivoted_skill_matrix.columns)
 
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return 'Please provide a phrase in the URL to shortlist skills with cosine similarity score above 0.85.'
+    return 'Please provide KPMG a phrase in the URL to shortlist skills with cosine similarity score above 0.85.'
 
 @app.route('/<phrase>')
 
@@ -31,7 +31,7 @@ def home():
 def shortlist_skills(phrase):
 
     # Define two phrases to compare
-    phrase1 = 'water'
+    phrase1 = 'beer'
     phrase2 = 'lion'
 
     # Generate embeddings for phrases
